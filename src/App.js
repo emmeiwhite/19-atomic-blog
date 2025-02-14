@@ -1,6 +1,7 @@
-import { useEffect, useState, useContext } from 'react'
-import PostContextProvider, { PostContext } from './PostContext'
+import { useEffect, useState } from 'react'
+import PostContextProvider from './PostContext'
 import { faker } from '@faker-js/faker'
+import useCustomContext from './useCustomContext'
 
 function createRandomPost() {
   return {
@@ -10,7 +11,7 @@ function createRandomPost() {
 }
 
 function App() {
-  const [isFakeDark, setIsFakeDark] = useState(true)
+  const [isFakeDark, setIsFakeDark] = useState(false)
 
   // Whenever `isFakeDark` changes, we toggle the `fake-dark-mode` class on the HTML element (see in "Elements" dev tool).
   useEffect(
@@ -41,7 +42,7 @@ function App() {
 }
 
 function Header() {
-  const { onClearPosts } = useContext(PostContext)
+  const { onClearPosts } = useCustomContext()
   return (
     <header>
       <h1>
@@ -57,7 +58,7 @@ function Header() {
 }
 
 function SearchPosts() {
-  const { setSearchQuery, searchQuery } = useContext(PostContext)
+  const { setSearchQuery, searchQuery } = useCustomContext()
   return (
     <input
       value={searchQuery}
@@ -68,7 +69,7 @@ function SearchPosts() {
 }
 
 function Results() {
-  const { posts } = useContext(PostContext)
+  const { posts } = useCustomContext()
   return <p>🚀 {posts.length} atomic posts found</p>
 }
 
@@ -82,7 +83,7 @@ function Main() {
 }
 
 function Posts() {
-  const { posts } = useContext(PostContext)
+  const { posts } = useCustomContext()
   return (
     <section>
       <List posts={posts} />
@@ -94,7 +95,7 @@ function FormAddPost() {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
 
-  const { onAddPost } = useContext(PostContext)
+  const { onAddPost } = useCustomContext()
 
   const handleSubmit = function (e) {
     e.preventDefault()
@@ -122,7 +123,7 @@ function FormAddPost() {
 }
 
 function List() {
-  const { posts } = useContext(PostContext)
+  const { posts } = useCustomContext()
   return (
     <ul>
       {posts.map((post, i) => (
