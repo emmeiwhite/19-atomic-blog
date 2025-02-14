@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { faker } from '@faker-js/faker'
 
 function createRandomPost() {
@@ -8,18 +8,14 @@ function createRandomPost() {
   }
 }
 
+// 1. Let's create the context
+const PostContext = createContext()
+
 function App() {
   const [posts, setPosts] = useState(() => Array.from({ length: 30 }, () => createRandomPost()))
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('') // Defining form field at parent component level
   const [isFakeDark, setIsFakeDark] = useState(false)
 
-  function sayHello() {
-    console.log('hello')
-  }
-
-  useEffect(() => {
-    Array.from({ length: 10 }, () => sayHello()) // the second argument is a mapper function invoked for each element of the Array.
-  }, [])
   // Derived state. These are the posts that will actually be displayed
   const searchedPosts =
     searchQuery.length > 0
@@ -45,48 +41,52 @@ function App() {
   )
 
   return (
-    <section>
-      <button
-        onClick={() => setIsFakeDark(isFakeDark => !isFakeDark)}
-        className="btn-fake-dark-mode">
-        {isFakeDark ? '☀️' : '🌙'}
-      </button>
+    // 2. Provide value to the child components
+    <PostContext.Provider
+      value={{
+        posts: searchedPosts,
+        onClearPosts: handleClearPosts,
+        onAddPost: handleAddPost,
+        searchQuery,
+        setSearchQuery
+      }}>
+      <section>
+        <button
+          onClick={() => setIsFakeDark(isFakeDark => !isFakeDark)}
+          className="btn-fake-dark-mode">
+          {isFakeDark ? '☀️' : '🌙'}
+        </button>
 
-      <Header
-        posts={searchedPosts}
-        onClearPosts={handleClearPosts}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-      <Main
-        posts={searchedPosts}
-        onAddPost={handleAddPost}
-      />
-      <Archive onAddPost={handleAddPost} />
-      <Footer />
-    </section>
+        <Header />
+        <Main
+          posts={searchedPosts}
+          onAddPost={handleAddPost}
+        />
+        <Archive onAddPost={handleAddPost} />
+        <Footer />
+      </section>
+    </PostContext.Provider>
   )
 }
 
-function Header({ posts, onClearPosts, searchQuery, setSearchQuery }) {
+function Header() {
+  const { onClearPosts } = useContext(PostContext)
   return (
     <header>
       <h1>
         <span>⚛️</span>The Atomic Blog
       </h1>
       <div>
-        <Results posts={posts} />
-        <SearchPosts
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-        />
+        <Results />
+        <SearchPosts />
         <button onClick={onClearPosts}>Clear posts</button>
       </div>
     </header>
   )
 }
 
-function SearchPosts({ searchQuery, setSearchQuery }) {
+function SearchPosts() {
+  const { setSearchQuery, searchQuery } = useContext(PostContext)
   return (
     <input
       value={searchQuery}
@@ -96,7 +96,8 @@ function SearchPosts({ searchQuery, setSearchQuery }) {
   )
 }
 
-function Results({ posts }) {
+function Results() {
+  const { posts } = useContext(PostContext)
   return <p>🚀 {posts.length} atomic posts found</p>
 }
 
